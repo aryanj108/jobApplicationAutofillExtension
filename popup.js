@@ -30,3 +30,25 @@ document.getElementById("fill").addEventListener("click", async () => {
     files: ["content.js"]
   });
 });
+
+document.getElementById("save").onclick = () => {
+  const profile = {
+    personal: {
+      firstName: firstName.value,
+      lastName: lastName.value,
+      preferredFirstName: preferredFirstName.value,
+      email: email.value,
+      phone: phone.value
+    },
+    location: {
+      address: address.value,
+      city: city.value,
+      county: county.value,
+      zipcode: zipcode.value,
+      country: country.value
+    }
+  };
+
+  chrome.storage.sync.set({ profile });
+};
+

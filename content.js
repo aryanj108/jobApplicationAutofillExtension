@@ -33,3 +33,20 @@ chrome.storage.sync.get(null, (data) => {
     }
   });
 });
+
+chrome.storage.sync.get("profile", ({ profile }) => {
+  document.querySelectorAll("input").forEach(input => {
+    const label =
+      input.labels?.[0]?.innerText.toLowerCase() ||
+      input.placeholder?.toLowerCase() ||
+      "";
+
+    if (label.includes("first name")) input.value = profile.personal.firstName;
+    if (label.includes("last name")) input.value = profile.personal.lastName;
+    if (label.includes("email")) input.value = profile.personal.email;
+    if (label.includes("phone")) input.value = profile.personal.phone;
+
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+});
+
