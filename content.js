@@ -491,22 +491,85 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     
     if (!hiddenSelect) return;
     
-    const label = getLabelText(hiddenSelect).trim();
+    // Try multiple ways to get the label text
+    let label = "";
+    
+    // Method 1: Check the visible Select2 input that user sees
+    const visibleInput = container.querySelector('.select2-choice, .select2-chosen');
+    if (visibleInput) {
+      const parentLabel = visibleInput.closest('.field')?.querySelector('label');
+      if (parentLabel) {
+        label = parentLabel.innerText;
+      }
+    }
+    
+    // Method 2: Check parent fieldset or form-field
+    if (!label) {
+      const fieldContainer = hiddenSelect.closest('.field, .form-field, fieldset, .question');
+      if (fieldContainer) {
+        const labelEl = fieldContainer.querySelector('label, legend, .question-label, h3');
+        if (labelEl) {
+          label = labelEl.innerText;
+        }
+      }
+    }
+    
+    // Method 3: Look for label with matching 'for' attribute
+    if (!label && hiddenSelect.id) {
+      const labelEl = document.querySelector(`label[for="${hiddenSelect.id}"]`);
+      if (labelEl) {
+        label = labelEl.innerText;
+      }
+    }
+    
+    // Method 4: Check previous sibling
+    if (!label && hiddenSelect.previousElementSibling) {
+      const prev = hiddenSelect.previousElementSibling;
+      if (prev.tagName === 'LABEL') {
+        label = prev.innerText;
+      }
+    }
+    
+    // Method 5: Use getLabelText helper
+    if (!label) {
+      label = getLabelText(hiddenSelect);
+    }
+    
+    label = label.toLowerCase().trim();
     console.log(`Found Select2 dropdown with label: "${label}"`);
     
     let valueToSelect = null;
     
-    // Match based on label
+    // Match based on label - be very specific
     if (label.includes("willing") && label.includes("office")) {
       valueToSelect = profile.workAuth.officePreference || "";
       console.log("Select2: office preference");
-    } else if (label.includes("legally authorized") || (label.includes("authorized") && label.includes("work"))) {
+    } 
+    else if (label.includes("legally") && label.includes("authorized")) {
       valueToSelect = profile.workAuth.legallyAuthorized || "";
       console.log("Select2: legally authorized");
-    } else if (label.includes("sponsorship") || (label.includes("visa") && label.includes("require"))) {
+    } 
+    else if (label.includes("authorized") && label.includes("work") && label.includes("us")) {
+      valueToSelect = profile.workAuth.legallyAuthorized || "";
+      console.log("Select2: legally authorized (work in US)");
+    }
+    else if (label.includes("will you") && label.includes("require") && label.includes("sponsorship")) {
       valueToSelect = profile.workAuth.sponsorshipRequired || "";
-      console.log("Select2: sponsorship");
-    } else if (label.includes("graduation") && label.includes("year")) {
+      console.log("Select2: sponsorship (will you require)");
+    }
+    else if (label.includes("visa") && label.includes("sponsorship")) {
+      valueToSelect = profile.workAuth.sponsorshipRequired || "";
+      console.log("Select2: visa sponsorship");
+    } 
+    else if (label.includes("require") && label.includes("sponsorship")) {
+      valueToSelect = profile.workAuth.sponsorshipRequired || "";
+      console.log("Select2: require sponsorship");
+    }
+    else if (label.includes("expected") && label.includes("graduation")) {
+      valueToSelect = profile.education.graduationYear || "";
+      console.log("Select2: graduation year");
+    }
+    else if (label.includes("graduation") && label.includes("year")) {
       valueToSelect = profile.education.graduationYear || "";
       console.log("Select2: graduation year");
     }
@@ -539,6 +602,9 @@ chrome.storage.sync.get("profile", ({ profile }) => {
         if (displayElement) {
           displayElement.textContent = option.text;
         }
+      } else {
+        console.log(`Select2: Could not find option matching "${valueStr}"`);
+        console.log(`Available options:`, [...hiddenSelect.options].map(o => o.text));
       }
     }
   });
