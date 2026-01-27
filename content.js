@@ -1,6 +1,67 @@
 // Content script for autofill
 console.log("Autofill content script loaded");
 
+// Set up mutation observer to watch for autocomplete dropdowns
+let autocompleteClickAttempts = 0;
+const maxAutocompleteAttempts = 3;
+
+const observer = new MutationObserver((mutations) => {
+  if (autocompleteClickAttempts >= maxAutocompleteAttempts) {
+    return;
+  }
+  
+  // Look for autocomplete dropdowns that just appeared
+  const dropdownSelectors = [
+    '[role="listbox"]',
+    '.autocomplete-results',
+    '[class*="autocomplete"]',
+    '[class*="dropdown-menu"]',
+    '[class*="suggestions"]',
+    'ul[role="listbox"]',
+    '[data-reach-listbox-popover]'
+  ];
+  
+  for (const selector of dropdownSelectors) {
+    const dropdowns = document.querySelectorAll(selector);
+    dropdowns.forEach(dropdown => {
+      // Check if dropdown is visible
+      const style = window.getComputedStyle(dropdown);
+      if (style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0') {
+        const rect = dropdown.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          // Find first option
+          const firstOption = dropdown.querySelector('[role="option"], li:not([role="presentation"]), .option, [class*="option"]:not([class*="container"])');
+          if (firstOption && !firstOption.hasAttribute('data-autocomplete-clicked')) {
+            console.log("Mutation observer found dropdown, clicking:", firstOption.textContent?.trim());
+            firstOption.setAttribute('data-autocomplete-clicked', 'true');
+            
+            // Try multiple click methods
+            firstOption.click();
+            
+            // Dispatch mousedown and mouseup
+            firstOption.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            firstOption.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+            
+            autocompleteClickAttempts++;
+          }
+        }
+      }
+    });
+  }
+});
+
+// Start observing
+observer.observe(document.body, {
+  childList: true,
+  subtree: true
+});
+
+// Stop observing after 3 seconds
+setTimeout(() => {
+  observer.disconnect();
+  console.log("Stopped observing for autocomplete dropdowns");
+}, 3000);
+
 chrome.storage.sync.get("profile", ({ profile }) => {
   if (!profile) {
     console.log("No profile found");
@@ -53,7 +114,7 @@ chrome.storage.sync.get("profile", ({ profile }) => {
   };
 
   // Helper: set input value (React-safe)
-  const setInputValue = (input, value, pressEnter = false) => {
+  const setInputValue = (input, value, handleAutocomplete = false) => {
     if (!value) return;
     
     try {
@@ -80,37 +141,83 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       input.dispatchEvent(new Event("input", { bubbles: true }));
       input.dispatchEvent(new Event("change", { bubbles: true }));
       
-      // Press Enter for autocomplete fields (like school, company, etc.)
-      if (pressEnter) {
+      console.log(`Filled ${input.name || input.id || 'input'} with: ${value}`);
+      
+      // Handle autocomplete dropdowns (like school, company, etc.)
+      if (handleAutocomplete) {
+        // Focus the input to show dropdown
+        input.focus();
+        
+        // Wait for autocomplete to appear and click first option
         setTimeout(() => {
-          const enterEvent = new KeyboardEvent("keydown", {
-            key: "Enter",
-            code: "Enter",
-            keyCode: 13,
-            which: 13,
-            bubbles: true,
-            cancelable: true
-          });
-          input.dispatchEvent(enterEvent);
+          // Try multiple strategies to find and click the dropdown option
           
-          // Also trigger keyup
-          const enterEventUp = new KeyboardEvent("keyup", {
-            key: "Enter",
-            code: "Enter",
-            keyCode: 13,
-            which: 13,
-            bubbles: true,
-            cancelable: true
-          });
-          input.dispatchEvent(enterEventUp);
+          // Strategy 1: Look for common autocomplete dropdown selectors
+          const dropdownSelectors = [
+            '[role="listbox"] [role="option"]',
+            '.autocomplete-option',
+            '.select-option',
+            '[class*="option"]',
+            '[class*="menu"] [role="option"]',
+            'ul[role="listbox"] li',
+            '.dropdown-item',
+            '[data-option-index="0"]'
+          ];
           
-          console.log(`Pressed Enter on ${input.name || input.id || 'input'}`);
-        }, 150); // Small delay to let autocomplete appear
+          let clicked = false;
+          
+          for (const selector of dropdownSelectors) {
+            const options = document.querySelectorAll(selector);
+            if (options.length > 0) {
+              // Click the first option
+              options[0].click();
+              console.log(`Clicked first option using selector: ${selector}`);
+              clicked = true;
+              break;
+            }
+          }
+          
+          // Strategy 2: Press arrow down then enter
+          if (!clicked) {
+            const arrowDownEvent = new KeyboardEvent("keydown", {
+              key: "ArrowDown",
+              code: "ArrowDown",
+              keyCode: 40,
+              which: 40,
+              bubbles: true,
+              cancelable: true
+            });
+            input.dispatchEvent(arrowDownEvent);
+            
+            setTimeout(() => {
+              const enterEvent = new KeyboardEvent("keydown", {
+                key: "Enter",
+                code: "Enter",
+                keyCode: 13,
+                which: 13,
+                bubbles: true,
+                cancelable: true
+              });
+              input.dispatchEvent(enterEvent);
+              
+              const enterEventUp = new KeyboardEvent("keyup", {
+                key: "Enter",
+                code: "Enter",
+                keyCode: 13,
+                which: 13,
+                bubbles: true,
+                cancelable: true
+              });
+              input.dispatchEvent(enterEventUp);
+              
+              console.log(`Pressed ArrowDown + Enter on ${input.name || input.id || 'input'}`);
+            }, 100);
+          }
+        }, 300); // Wait for dropdown to appear
+      } else {
+        input.dispatchEvent(new Event("blur", { bubbles: true }));
       }
       
-      input.dispatchEvent(new Event("blur", { bubbles: true }));
-      
-      console.log(`Filled ${input.name || input.id || 'input'} with: ${value}`);
     } catch (error) {
       console.error("Error setting input value:", error);
       input.value = value;
@@ -289,6 +396,36 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       }, 5000);
     }
   }, 500);
+
+  // --- Additional autocomplete handler: Click visible dropdown options ---
+  setTimeout(() => {
+    console.log("Checking for visible autocomplete dropdowns...");
+    
+    // Common selectors for autocomplete dropdowns
+    const dropdownSelectors = [
+      '[role="listbox"]:not([style*="display: none"])',
+      '.autocomplete-dropdown:not([style*="display: none"])',
+      '[class*="dropdown"][class*="menu"]:not([style*="display: none"])',
+      'ul[role="listbox"]:not([style*="display: none"])',
+      '.select-dropdown:not([style*="display: none"])'
+    ];
+    
+    for (const selector of dropdownSelectors) {
+      const dropdowns = document.querySelectorAll(selector);
+      dropdowns.forEach(dropdown => {
+        // Check if dropdown is actually visible
+        const rect = dropdown.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          // Find first option and click it
+          const firstOption = dropdown.querySelector('[role="option"], li, .option, [class*="option"]');
+          if (firstOption) {
+            console.log("Found visible dropdown, clicking first option:", firstOption.textContent);
+            firstOption.click();
+          }
+        }
+      });
+    }
+  }, 800);
 
   console.log("Autofill complete!");
 });
