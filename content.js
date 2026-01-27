@@ -69,6 +69,14 @@ chrome.storage.sync.get("profile", ({ profile }) => {
   }
 
   console.log("Autofilling with profile:", profile);
+  
+  // Ensure all profile sections exist
+  profile.personal = profile.personal || {};
+  profile.location = profile.location || {};
+  profile.education = profile.education || {};
+  profile.links = profile.links || {};
+  profile.workAuth = profile.workAuth || {};
+  profile.eeo = profile.eeo || {};
 
   const inputs = document.querySelectorAll("input, textarea");
   const selects = document.querySelectorAll("select");
@@ -410,30 +418,30 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       console.log("Found office/location work dropdown");
       fillSelect(select, profile.workAuth.officePreference || "");
     }
-    // Work authorization - be very specific
-    else if (label.includes("legally") && label.includes("authorized")) {
-      console.log("Found legally authorized dropdown");
+    // Work authorization - be very specific - CHECK THESE FIRST!
+    else if (label.includes("legally authorized") && label.includes("work")) {
+      console.log("Found 'legally authorized to work' dropdown");
       fillSelect(select, profile.workAuth.legallyAuthorized || "");
     }
-    else if (label.includes("legal") && (label.includes("work") || label.includes("us"))) {
+    else if (label.includes("authorized") && label.includes("work") && label.includes("us")) {
+      console.log("Found 'authorized to work in US' dropdown");
+      fillSelect(select, profile.workAuth.legallyAuthorized || "");
+    }
+    else if (label.includes("legal") && label.includes("work")) {
       console.log("Found legal work authorization dropdown");
       fillSelect(select, profile.workAuth.legallyAuthorized || "");
     }
-    else if (label.includes("authorized to work")) {
-      console.log("Found authorized to work dropdown");
-      fillSelect(select, profile.workAuth.legallyAuthorized || "");
-    }
     // Sponsorship - be very specific
-    else if (label.includes("sponsorship") || (label.includes("visa") && label.includes("require"))) {
-      console.log("Found sponsorship dropdown");
+    else if (label.includes("will you") && label.includes("require") && label.includes("sponsorship")) {
+      console.log("Found 'will you require sponsorship' dropdown");
       fillSelect(select, profile.workAuth.sponsorshipRequired || "");
     }
-    else if (label.includes("require") && label.includes("visa")) {
-      console.log("Found visa requirement dropdown");
+    else if (label.includes("visa") && label.includes("sponsorship")) {
+      console.log("Found 'visa sponsorship' dropdown");
       fillSelect(select, profile.workAuth.sponsorshipRequired || "");
     }
-    else if (label.includes("will you") && label.includes("sponsorship")) {
-      console.log("Found future sponsorship dropdown");
+    else if (label.includes("require") && (label.includes("visa") || label.includes("sponsorship"))) {
+      console.log("Found 'require visa/sponsorship' dropdown");
       fillSelect(select, profile.workAuth.sponsorshipRequired || "");
     }
     // Education graduation year (expected graduation)
@@ -466,6 +474,7 @@ chrome.storage.sync.get("profile", ({ profile }) => {
   if (profile.workAuth.legallyAuthorized) {
     fillRadio("legally authorized", profile.workAuth.legallyAuthorized);
     fillRadio("legal authorization", profile.workAuth.legallyAuthorized);
+    fillRadio("authorized to work", profile.workAuth.legallyAuthorized);
   }
   
   if (profile.workAuth.sponsorshipRequired) {
