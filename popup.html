@@ -2,108 +2,396 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Resume Autofill</title>
+  <title>Job Application Autofill</title>
   <style>
-    body { font-family: sans-serif; padding: 10px; max-width: 400px; }
-    h3 { margin-top: 15px; margin-bottom: 5px; }
-    input, select { width: 100%; margin-bottom: 8px; padding: 5px; box-sizing: border-box; }
-    button { margin-top: 10px; width: 48%; padding: 5px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-width: 420px;
+      max-width: 420px;
+    }
+    
+    .header {
+      background: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .header h2 {
+      color: #667eea;
+      font-size: 22px;
+      margin-bottom: 5px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 13px;
+    }
+    
+    .container {
+      background: white;
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    
+    .section {
+      margin-bottom: 25px;
+    }
+    
+    .section-title {
+      color: #667eea;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .section-icon {
+      font-size: 18px;
+    }
+    
+    .form-group {
+      margin-bottom: 12px;
+    }
+    
+    label {
+      display: block;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.3s;
+      background: white;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 10px;
+      padding: 15px 20px;
+      background: white;
+      border-top: 1px solid #f0f0f0;
+      position: sticky;
+      bottom: 0;
+    }
+    
+    button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    #save {
+      background: #667eea;
+      color: white;
+    }
+    
+    #save:hover {
+      background: #5568d3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    #fill {
+      background: #48bb78;
+      color: white;
+    }
+    
+    #fill:hover {
+      background: #38a169;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+    }
+    
+    .status-message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateX(100px);
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    
+    .status-message.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    .status-message.success {
+      background: #48bb78;
+      color: white;
+    }
+    
+    .status-message.error {
+      background: #f56565;
+      color: white;
+    }
+    
+    /* Scrollbar styling */
+    .container::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .container::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    .container::-webkit-scrollbar-thumb {
+      background: #667eea;
+      border-radius: 4px;
+    }
+    
+    .container::-webkit-scrollbar-thumb:hover {
+      background: #5568d3;
+    }
   </style>
 </head>
 <body>
-  <!-- PERSONAL -->
-  <h3>Personal</h3>
-  <input id="firstName" placeholder="First Name" />
-  <input id="lastName" placeholder="Last Name" />
-  <input id="preferredFirstName" placeholder="Preferred First Name" />
-  <input id="email" placeholder="Email" />
-  <input id="phone" placeholder="Phone" />
-
-  <!-- LOCATION -->
-  <h3>Location</h3>
-  <input id="address" placeholder="Address" />
-  <input id="city" placeholder="City" />
-  <input id="county" placeholder="County" />
-  <input id="zipcode" placeholder="Zipcode" />
-  <input id="country" placeholder="Country" />
-
-  <!-- EDUCATION -->
-  <h3>Education</h3>
-  <input id="school" placeholder="School / University" />
-  <input id="degree" placeholder="Degree" />
-  <select id="endMonth">
-    <option value="">End Month</option>
-    <option>January</option><option>February</option><option>March</option>
-    <option>April</option><option>May</option><option>June</option>
-    <option>July</option><option>August</option><option>September</option>
-    <option>October</option><option>November</option><option>December</option>
-  </select>
-  <select id="endYear">
-    <option value="">End Year</option>
-    <!-- Generate years dynamically if you want -->
-    <option>2026</option><option>2025</option><option>2024</option>
-    <option>2023</option><option>2022</option>
-  </select>
-
-  <!-- LINKS -->
-  <h3>Links</h3>
-  <input id="linkedin" placeholder="LinkedIn Profile" />
-  <input id="website" placeholder="Website / Portfolio" />
-
-  <!-- WORK AUTHORIZATION -->
-  <h3>Work Authorization</h3>
-  <select id="sponsorshipRequired">
-    <option value="">Require Sponsorship?</option>
-    <option>Yes</option>
-    <option>No</option>
-  </select>
-
-  <!-- VOLUNTARY SELF-ID / EEO -->
-  <h3>Voluntary Self-ID (Optional)</h3>
-  <select id="gender">
-    <option value="">Gender</option>
-    <option>Male</option>
-    <option>Female</option>
-    <option>Other</option>
-    <option>Prefer not to say</option>
-  </select>
-
-  <select id="hispanicLatino">
-    <option value="">Hispanic / Latino?</option>
-    <option>Yes</option>
-    <option>No</option>
-    <option>Prefer not to say</option>
-  </select>
-
-  <select id="race">
-    <option value="">Race</option>
-    <option>American Indian / Alaska Native</option>
-    <option>Asian</option>
-    <option>Black / African American</option>
-    <option>Native Hawaiian / Pacific Islander</option>
-    <option>White</option>
-    <option>Other</option>
-    <option>Prefer not to say</option>
-  </select>
-
-  <select id="veteranStatus">
-    <option value="">Veteran Status</option>
-    <option>Yes</option>
-    <option>No</option>
-    <option>Prefer not to say</option>
-  </select>
-
-  <select id="disabilityStatus">
-    <option value="">Disability Status</option>
-    <option>Yes</option>
-    <option>No</option>
-    <option>Prefer not to say</option>
-  </select>
-
-  <!-- Buttons -->
-  <div style="display:flex; justify-content: space-between;">
-    <button id="save">Save</button>
-    <button id="fill">Autofill Page</button>
+  <div class="header">
+    <h2>🚀 Job Application Autofill</h2>
+    <p>Fill once, apply everywhere</p>
   </div>
+  
+  <div class="container">
+    <!-- PERSONAL -->
+    <div class="section">
+      <div class="section-title">
+        <span class="section-icon">👤</span>
+        Personal Information
+      </div>
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input id="firstName" type="text" placeholder="John" />
+      </div>
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input id="lastName" type="text" placeholder="Doe" />
+      </div>
+      <div class="form-group">
+        <label for="preferredFirstName">Preferred First Name (Optional)</label>
+        <input id="preferredFirstName" type="text" placeholder="Johnny" />
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input id="email" type="email" placeholder="john.doe@example.com" />
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input id="phone" type="tel" placeholder="(555) 123-4567" />
+      </div>
+    </div>
+
+    <!-- LOCATION -->
+    <div class="section">
+      <div class="section-title">
+        <span class="section-icon">📍</span>
+        Location
+      </div>
+      <div class="form-group">
+        <label for="address">Street Address</label>
+        <input id="address" type="text" placeholder="123 Main St" />
+      </div>
+      <div class="form-group">
+        <label for="city">City</label>
+        <input id="city" type="text" placeholder="San Francisco" />
+      </div>
+      <div class="form-group">
+        <label for="county">County (Optional)</label>
+        <input id="county" type="text" placeholder="San Francisco County" />
+      </div>
+      <div class="form-group">
+        <label for="zipcode">Zipcode</label>
+        <input id="zipcode" type="text" placeholder="94102" />
+      </div>
+      <div class="form-group">
+        <label for="country">Country</label>
+        <input id="country" type="text" placeholder="United States" />
+      </div>
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="section">
+      <div class="section-title">
+        <span class="section-icon">🎓</span>
+        Education
+      </div>
+      <div class="form-group">
+        <label for="school">School / University</label>
+        <input id="school" type="text" placeholder="Stanford University" />
+      </div>
+      <div class="form-group">
+        <label for="degree">Degree</label>
+        <input id="degree" type="text" placeholder="Bachelor of Science in Computer Science" />
+      </div>
+      <div class="form-group">
+        <label for="endMonth">Graduation Month</label>
+        <select id="endMonth">
+          <option value="">Select Month</option>
+          <option>January</option>
+          <option>February</option>
+          <option>March</option>
+          <option>April</option>
+          <option>May</option>
+          <option>June</option>
+          <option>July</option>
+          <option>August</option>
+          <option>September</option>
+          <option>October</option>
+          <option>November</option>
+          <option>December</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="endYear">Graduation Year</label>
+        <select id="endYear">
+          <option value="">Select Year</option>
+          <option>2026</option>
+          <option>2025</option>
+          <option>2024</option>
+          <option>2023</option>
+          <option>2022</option>
+          <option>2021</option>
+          <option>2020</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- LINKS -->
+    <div class="section">
+      <div class="section-title">
+        <span class="section-icon">🔗</span>
+        Professional Links
+      </div>
+      <div class="form-group">
+        <label for="linkedin">LinkedIn Profile</label>
+        <input id="linkedin" type="url" placeholder="https://linkedin.com/in/johndoe" />
+      </div>
+      <div class="form-group">
+        <label for="website">Website / Portfolio</label>
+        <input id="website" type="url" placeholder="https://johndoe.com" />
+      </div>
+    </div>
+
+    <!-- WORK AUTHORIZATION -->
+    <div class="section">
+      <div class="section-title">
+        <span class="section-icon">💼</span>
+        Work Authorization
+      </div>
+      <div class="form-group">
+        <label for="sponsorshipRequired">Require Visa Sponsorship?</label>
+        <select id="sponsorshipRequired">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- VOLUNTARY SELF-ID / EEO -->
+    <div class="section">
+      <div class="section-title">
+        <span class="section-icon">📋</span>
+        Voluntary Self-Identification (Optional)
+      </div>
+      <div class="form-group">
+        <label for="gender">Gender</label>
+        <select id="gender">
+          <option value="">Select Option</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Non-binary</option>
+          <option>Other</option>
+          <option>Prefer not to say</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="hispanicLatino">Hispanic / Latino?</label>
+        <select id="hispanicLatino">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+          <option>Prefer not to say</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="race">Race</label>
+        <select id="race">
+          <option value="">Select Option</option>
+          <option>American Indian / Alaska Native</option>
+          <option>Asian</option>
+          <option>Black / African American</option>
+          <option>Native Hawaiian / Pacific Islander</option>
+          <option>White</option>
+          <option>Two or more races</option>
+          <option>Prefer not to say</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="veteranStatus">Veteran Status</label>
+        <select id="veteranStatus">
+          <option value="">Select Option</option>
+          <option>I am a veteran</option>
+          <option>I am not a veteran</option>
+          <option>Prefer not to say</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="disabilityStatus">Disability Status</label>
+        <select id="disabilityStatus">
+          <option value="">Select Option</option>
+          <option>Yes, I have a disability</option>
+          <option>No, I don't have a disability</option>
+          <option>Prefer not to say</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-group">
+    <button id="save">💾 Save Profile</button>
+    <button id="fill">✨ Autofill Page</button>
+  </div>
+
+  <div id="statusMessage" class="status-message"></div>
+
+  <script src="popup.js"></script>
 </body>
 </html>
