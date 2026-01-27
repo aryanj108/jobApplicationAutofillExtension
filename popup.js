@@ -1,35 +1,42 @@
-// Load saved profile when popup opens
+// --- Load saved profile when popup opens ---
 chrome.storage.sync.get("profile", ({ profile }) => {
-  if (!profile) return;
+  // Ensure default objects exist
+  profile = profile || {};
+  profile.personal = profile.personal || {};
+  profile.location = profile.location || {};
+  profile.education = profile.education || {};
+  profile.links = profile.links || {};
+  profile.workAuth = profile.workAuth || {};
+  profile.eeo = profile.eeo || {};
 
-  // Personal
+  // PERSONAL
   document.getElementById("firstName").value = profile.personal.firstName || "";
   document.getElementById("lastName").value = profile.personal.lastName || "";
   document.getElementById("preferredFirstName").value = profile.personal.preferredFirstName || "";
   document.getElementById("email").value = profile.personal.email || "";
   document.getElementById("phone").value = profile.personal.phone || "";
 
-  // Location
+  // LOCATION
   document.getElementById("address").value = profile.location.address || "";
   document.getElementById("city").value = profile.location.city || "";
   document.getElementById("county").value = profile.location.county || "";
   document.getElementById("zipcode").value = profile.location.zipcode || "";
   document.getElementById("country").value = profile.location.country || "";
 
-  // Education
+  // EDUCATION
   document.getElementById("school").value = profile.education.school || "";
   document.getElementById("degree").value = profile.education.degree || "";
   document.getElementById("endMonth").value = profile.education.endMonth || "";
   document.getElementById("endYear").value = profile.education.endYear || "";
 
-  // Links
+  // LINKS
   document.getElementById("linkedin").value = profile.links.linkedin || "";
   document.getElementById("website").value = profile.links.website || "";
 
-  // Work Authorization
+  // WORK AUTHORIZATION
   document.getElementById("sponsorshipRequired").value = profile.workAuth.sponsorshipRequired || "";
 
-  // Voluntary Self-ID / EEO
+  // EEO / Voluntary Self-ID
   document.getElementById("gender").value = profile.eeo.gender || "";
   document.getElementById("hispanicLatino").value = profile.eeo.hispanicLatino || "";
   document.getElementById("race").value = profile.eeo.race || "";
@@ -37,8 +44,9 @@ chrome.storage.sync.get("profile", ({ profile }) => {
   document.getElementById("disabilityStatus").value = profile.eeo.disabilityStatus || "";
 });
 
-// Save profile
+// --- Save profile ---
 document.getElementById("save").addEventListener("click", () => {
+  // Build profile object from current form values
   const profile = {
     personal: {
       firstName: document.getElementById("firstName").value,
@@ -76,13 +84,14 @@ document.getElementById("save").addEventListener("click", () => {
     }
   };
 
+  // Save to chrome storage
   chrome.storage.sync.set({ profile }, () => {
-    alert("Profile saved!");
+    alert("Profile saved successfully!");
     console.log("Saved profile:", profile);
   });
 });
 
-// Run autofill on current tab
+// --- Run autofill on current tab ---
 document.getElementById("fill").addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   chrome.scripting.executeScript({
