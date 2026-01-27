@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // EDUCATION
     document.getElementById("school").value = profile.education.school || "";
     document.getElementById("degree").value = profile.education.degree || "";
+    document.getElementById("graduationYear").value = profile.education.graduationYear || "";
     document.getElementById("endMonth").value = profile.education.endMonth || "";
     document.getElementById("endYear").value = profile.education.endYear || "";
 
@@ -52,7 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("website").value = profile.links.website || "";
 
     // WORK AUTHORIZATION
+    document.getElementById("legallyAuthorized").value = profile.workAuth.legallyAuthorized || "";
     document.getElementById("sponsorshipRequired").value = profile.workAuth.sponsorshipRequired || "";
+    document.getElementById("referralSource").value = profile.workAuth.referralSource || "";
+    document.getElementById("officePreference").value = profile.workAuth.officePreference || "";
 
     // EEO / Voluntary Self-ID
     document.getElementById("gender").value = profile.eeo.gender || "";
@@ -85,6 +89,7 @@ document.getElementById("save").addEventListener("click", () => {
       education: {
         school: document.getElementById("school").value,
         degree: document.getElementById("degree").value,
+        graduationYear: document.getElementById("graduationYear").value,
         endMonth: document.getElementById("endMonth").value,
         endYear: document.getElementById("endYear").value
       },
@@ -93,7 +98,10 @@ document.getElementById("save").addEventListener("click", () => {
         website: document.getElementById("website").value
       },
       workAuth: {
-        sponsorshipRequired: document.getElementById("sponsorshipRequired").value
+        legallyAuthorized: document.getElementById("legallyAuthorized").value,
+        sponsorshipRequired: document.getElementById("sponsorshipRequired").value,
+        referralSource: document.getElementById("referralSource").value,
+        officePreference: document.getElementById("officePreference").value
       },
       eeo: {
         gender: document.getElementById("gender").value,

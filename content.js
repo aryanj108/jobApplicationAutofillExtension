@@ -53,7 +53,7 @@ chrome.storage.sync.get("profile", ({ profile }) => {
   };
 
   // Helper: set input value (React-safe)
-  const setInputValue = (input, value) => {
+  const setInputValue = (input, value, pressEnter = false) => {
     if (!value) return;
     
     try {
@@ -79,6 +79,35 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       // Trigger events for React and other frameworks
       input.dispatchEvent(new Event("input", { bubbles: true }));
       input.dispatchEvent(new Event("change", { bubbles: true }));
+      
+      // Press Enter for autocomplete fields (like school, company, etc.)
+      if (pressEnter) {
+        setTimeout(() => {
+          const enterEvent = new KeyboardEvent("keydown", {
+            key: "Enter",
+            code: "Enter",
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true
+          });
+          input.dispatchEvent(enterEvent);
+          
+          // Also trigger keyup
+          const enterEventUp = new KeyboardEvent("keyup", {
+            key: "Enter",
+            code: "Enter",
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true
+          });
+          input.dispatchEvent(enterEventUp);
+          
+          console.log(`Pressed Enter on ${input.name || input.id || 'input'}`);
+        }, 150); // Small delay to let autocomplete appear
+      }
+      
       input.dispatchEvent(new Event("blur", { bubbles: true }));
       
       console.log(`Filled ${input.name || input.id || 'input'} with: ${value}`);
@@ -177,7 +206,7 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     }
     // Education
     else if (label.includes("school") || label.includes("university") || label.includes("college") || label.includes("institution")) {
-      setInputValue(input, profile.education.school || "");
+      setInputValue(input, profile.education.school || "", true); // Press Enter for autocomplete
     } else if (label.includes("degree") || label.includes("major") || label.includes("field of study")) {
       setInputValue(input, profile.education.degree || "");
     }
@@ -187,6 +216,14 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     } else if (label.includes("website") || label.includes("portfolio") || label.includes("personal site") || label.includes("url")) {
       setInputValue(input, profile.links.website || "");
     }
+    // Referral source / How did you hear
+    else if (label.includes("hear about") || label.includes("referral") || label.includes("how did you")) {
+      setInputValue(input, profile.workAuth.referralSource || "");
+    }
+    // Office preference / willing to work in office
+    else if (label.includes("office") && (label.includes("willing") || label.includes("work"))) {
+      setInputValue(input, profile.workAuth.officePreference || "");
+    }
   });
 
   // --- Fill dropdowns ---
@@ -194,14 +231,16 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     const label = getLabelText(select);
     console.log(`Checking select with label: ${label}`);
 
+    // Education graduation year (expected graduation)
+    if ((label.includes("graduation") || label.includes("expected")) && label.includes("year")) {
+      fillSelect(select, profile.education.graduationYear || profile.education.endYear || "");
+    }
     // Education end date
-    if (label.includes("end") && label.includes("month")) {
+    else if (label.includes("end") && label.includes("month")) {
       fillSelect(select, profile.education.endMonth || "");
     } else if (label.includes("graduation") && label.includes("month")) {
       fillSelect(select, profile.education.endMonth || "");
     } else if (label.includes("end") && label.includes("year")) {
-      fillSelect(select, profile.education.endYear || "");
-    } else if (label.includes("graduation") && label.includes("year")) {
       fillSelect(select, profile.education.endYear || "");
     }
     // EEO / demographics
@@ -217,12 +256,19 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       fillSelect(select, profile.eeo.disabilityStatus || "");
     }
     // Work authorization
-    else if (label.includes("sponsorship") || label.includes("visa")) {
+    else if (label.includes("legally authorized") || label.includes("legal authorization")) {
+      fillSelect(select, profile.workAuth.legallyAuthorized || "");
+    } else if (label.includes("sponsorship") || label.includes("visa")) {
       fillSelect(select, profile.workAuth.sponsorshipRequired || "");
     }
   });
 
-  // --- Fill radio buttons for sponsorship ---
+  // --- Fill radio buttons for sponsorship and work auth ---
+  if (profile.workAuth.legallyAuthorized) {
+    fillRadio("legally authorized", profile.workAuth.legallyAuthorized);
+    fillRadio("legal authorization", profile.workAuth.legallyAuthorized);
+  }
+  
   if (profile.workAuth.sponsorshipRequired) {
     fillRadio("sponsorship", profile.workAuth.sponsorshipRequired);
     fillRadio("visa", profile.workAuth.sponsorshipRequired);
