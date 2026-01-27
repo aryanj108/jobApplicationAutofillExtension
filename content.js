@@ -87,6 +87,15 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       labelText = el.getAttribute("aria-label");
     }
     
+    // Check for aria-labelledby
+    if (!labelText && el.getAttribute("aria-labelledby")) {
+      const labelId = el.getAttribute("aria-labelledby");
+      const labelEl = document.getElementById(labelId);
+      if (labelEl) {
+        labelText = labelEl.innerText;
+      }
+    }
+    
     // Check for placeholder
     if (!labelText && el.placeholder) {
       labelText = el.placeholder;
@@ -105,9 +114,32 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     // Check parent for label-like text
     if (!labelText && el.parentElement) {
       const parentText = el.parentElement.innerText;
-      if (parentText && parentText.length < 100) {
+      if (parentText && parentText.length < 200) {
         labelText = parentText;
       }
+    }
+    
+    // Check previous sibling for label text
+    if (!labelText && el.previousElementSibling) {
+      const siblingText = el.previousElementSibling.innerText;
+      if (siblingText && siblingText.length < 200) {
+        labelText = siblingText;
+      }
+    }
+    
+    // Check for fieldset legend (common in forms)
+    let parent = el.parentElement;
+    let depth = 0;
+    while (parent && depth < 5) {
+      if (parent.tagName === 'FIELDSET') {
+        const legend = parent.querySelector('legend');
+        if (legend && !labelText) {
+          labelText = legend.innerText;
+        }
+        break;
+      }
+      parent = parent.parentElement;
+      depth++;
     }
     
     return labelText.toLowerCase();
@@ -229,17 +261,46 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     if (!value) return;
     
     try {
-      const valueStr = value.toString().toLowerCase();
+      const valueStr = value.toString().toLowerCase().trim();
       
-      // Try exact match first
+      console.log(`Attempting to fill select with value: "${valueStr}"`);
+      console.log(`Available options:`, [...select.options].map(o => `"${o.text}" (value: "${o.value}")`));
+      
+      // Try exact match on value attribute
       let option = [...select.options].find(
-        (o) => o.value.toLowerCase() === valueStr || o.text.toLowerCase() === valueStr
+        (o) => o.value.toLowerCase().trim() === valueStr
       );
       
-      // Try partial match
+      // Try exact match on text
       if (!option) {
         option = [...select.options].find(
-          (o) => o.text.toLowerCase().includes(valueStr) || o.value.toLowerCase().includes(valueStr)
+          (o) => o.text.toLowerCase().trim() === valueStr
+        );
+      }
+      
+      // Try partial match on text
+      if (!option) {
+        option = [...select.options].find(
+          (o) => o.text.toLowerCase().includes(valueStr)
+        );
+      }
+      
+      // Try partial match on value
+      if (!option) {
+        option = [...select.options].find(
+          (o) => o.value.toLowerCase().includes(valueStr)
+        );
+      }
+      
+      // For Yes/No, try matching just the first letter or common variations
+      if (!option && (valueStr === 'yes' || valueStr === 'no')) {
+        option = [...select.options].find(
+          (o) => {
+            const text = o.text.toLowerCase().trim();
+            const val = o.value.toLowerCase().trim();
+            return text === valueStr || val === valueStr || 
+                   text.startsWith(valueStr) || val.startsWith(valueStr);
+          }
         );
       }
       
@@ -247,7 +308,9 @@ chrome.storage.sync.get("profile", ({ profile }) => {
         select.value = option.value;
         select.dispatchEvent(new Event("change", { bubbles: true }));
         select.dispatchEvent(new Event("blur", { bubbles: true }));
-        console.log(`Selected ${option.text} in ${select.name || select.id || 'select'}`);
+        console.log(`✓ Selected "${option.text}" in ${select.name || select.id || 'select'}`);
+      } else {
+        console.log(`✗ Could not find matching option for "${valueStr}"`);
       }
     } catch (error) {
       console.error("Error setting select value:", error);
@@ -336,10 +399,45 @@ chrome.storage.sync.get("profile", ({ profile }) => {
   // --- Fill dropdowns ---
   selects.forEach((select) => {
     const label = getLabelText(select);
-    console.log(`Checking select with label: ${label}`);
+    console.log(`Checking select with label: "${label}"`);
 
+    // Office/location preference - check first since it's specific
+    if ((label.includes("willing") || label.includes("able")) && label.includes("office")) {
+      console.log("Found office preference dropdown");
+      fillSelect(select, profile.workAuth.officePreference || "");
+    }
+    else if (label.includes("work") && (label.includes("office") || label.includes("location") || label.includes("sf") || label.includes("nyc"))) {
+      console.log("Found office/location work dropdown");
+      fillSelect(select, profile.workAuth.officePreference || "");
+    }
+    // Work authorization - be very specific
+    else if (label.includes("legally") && label.includes("authorized")) {
+      console.log("Found legally authorized dropdown");
+      fillSelect(select, profile.workAuth.legallyAuthorized || "");
+    }
+    else if (label.includes("legal") && (label.includes("work") || label.includes("us"))) {
+      console.log("Found legal work authorization dropdown");
+      fillSelect(select, profile.workAuth.legallyAuthorized || "");
+    }
+    else if (label.includes("authorized to work")) {
+      console.log("Found authorized to work dropdown");
+      fillSelect(select, profile.workAuth.legallyAuthorized || "");
+    }
+    // Sponsorship - be very specific
+    else if (label.includes("sponsorship") || (label.includes("visa") && label.includes("require"))) {
+      console.log("Found sponsorship dropdown");
+      fillSelect(select, profile.workAuth.sponsorshipRequired || "");
+    }
+    else if (label.includes("require") && label.includes("visa")) {
+      console.log("Found visa requirement dropdown");
+      fillSelect(select, profile.workAuth.sponsorshipRequired || "");
+    }
+    else if (label.includes("will you") && label.includes("sponsorship")) {
+      console.log("Found future sponsorship dropdown");
+      fillSelect(select, profile.workAuth.sponsorshipRequired || "");
+    }
     // Education graduation year (expected graduation)
-    if ((label.includes("graduation") || label.includes("expected")) && label.includes("year")) {
+    else if ((label.includes("graduation") || label.includes("expected")) && label.includes("year")) {
       fillSelect(select, profile.education.graduationYear || profile.education.endYear || "");
     }
     // Education end date
@@ -361,12 +459,6 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       fillSelect(select, profile.eeo.veteranStatus || "");
     } else if (label.includes("disability") || label.includes("disabled")) {
       fillSelect(select, profile.eeo.disabilityStatus || "");
-    }
-    // Work authorization
-    else if (label.includes("legally authorized") || label.includes("legal authorization")) {
-      fillSelect(select, profile.workAuth.legallyAuthorized || "");
-    } else if (label.includes("sponsorship") || label.includes("visa")) {
-      fillSelect(select, profile.workAuth.sponsorshipRequired || "");
     }
   });
 
