@@ -358,6 +358,15 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     const label = getLabelText(input);
     console.log(`Checking input with label: ${label}`);
 
+    // Check if this is a Select2 search field (they have ids like s2id_autogen#_search)
+    const isSelect2Search = input.id && input.id.includes('s2id_autogen') && input.id.includes('_search');
+    
+    // For Select2 dropdowns, we need to fill the hidden select instead
+    if (isSelect2Search) {
+      console.log("Skipping Select2 search input, will handle via select element");
+      return;
+    }
+
     // Personal
     if (label.includes("first") && label.includes("name") && !label.includes("last") && !label.includes("preferred")) {
       setInputValue(input, profile.personal.firstName || "");
@@ -467,6 +476,70 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       fillSelect(select, profile.eeo.veteranStatus || "");
     } else if (label.includes("disability") || label.includes("disabled")) {
       fillSelect(select, profile.eeo.disabilityStatus || "");
+    }
+  });
+
+  // --- Handle Select2 dropdowns (Greenhouse uses these) ---
+  console.log("Checking for Select2 dropdowns...");
+  
+  // Find all Select2 containers
+  const select2Containers = document.querySelectorAll('.select2-container');
+  select2Containers.forEach(container => {
+    // Find the associated hidden select
+    const selectId = container.id.replace('s2id_', '');
+    const hiddenSelect = document.getElementById(selectId);
+    
+    if (!hiddenSelect) return;
+    
+    const label = getLabelText(hiddenSelect).trim();
+    console.log(`Found Select2 dropdown with label: "${label}"`);
+    
+    let valueToSelect = null;
+    
+    // Match based on label
+    if (label.includes("willing") && label.includes("office")) {
+      valueToSelect = profile.workAuth.officePreference || "";
+      console.log("Select2: office preference");
+    } else if (label.includes("legally authorized") || (label.includes("authorized") && label.includes("work"))) {
+      valueToSelect = profile.workAuth.legallyAuthorized || "";
+      console.log("Select2: legally authorized");
+    } else if (label.includes("sponsorship") || (label.includes("visa") && label.includes("require"))) {
+      valueToSelect = profile.workAuth.sponsorshipRequired || "";
+      console.log("Select2: sponsorship");
+    } else if (label.includes("graduation") && label.includes("year")) {
+      valueToSelect = profile.education.graduationYear || "";
+      console.log("Select2: graduation year");
+    }
+    
+    if (valueToSelect) {
+      // Try to set the value on the hidden select
+      const valueStr = valueToSelect.toString().toLowerCase().trim();
+      const option = [...hiddenSelect.options].find(o => 
+        o.text.toLowerCase().trim() === valueStr || 
+        o.value.toLowerCase().trim() === valueStr ||
+        o.text.toLowerCase().includes(valueStr) ||
+        o.value.toLowerCase().includes(valueStr)
+      );
+      
+      if (option) {
+        console.log(`Select2: Setting value to "${option.text}"`);
+        hiddenSelect.value = option.value;
+        
+        // Trigger Select2's change event
+        if (window.jQuery && window.jQuery.fn.select2) {
+          $(hiddenSelect).trigger('change');
+        } else {
+          // Fallback to vanilla JS events
+          hiddenSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          hiddenSelect.dispatchEvent(new Event('select2:select', { bubbles: true }));
+        }
+        
+        // Also try updating the UI directly
+        const displayElement = container.querySelector('.select2-chosen');
+        if (displayElement) {
+          displayElement.textContent = option.text;
+        }
+      }
     }
   });
 
