@@ -1,52 +1,109 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        width: 250px;
-        padding: 10px;
-      }
-      input {
-        width: 100%;
-        margin-bottom: 8px;
-      }
-      button {
-        width: 100%;
-        margin-top: 6px;
-      }
-    </style>
-  </head>
-  <body>
-    <h3>Autofill Info</h3>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resume Autofill</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; max-width: 400px; }
+    h3 { margin-top: 15px; margin-bottom: 5px; }
+    input, select { width: 100%; margin-bottom: 8px; padding: 5px; box-sizing: border-box; }
+    button { margin-top: 10px; width: 48%; padding: 5px; }
+  </style>
+</head>
+<body>
+  <!-- PERSONAL -->
+  <h3>Personal</h3>
+  <input id="firstName" placeholder="First Name" />
+  <input id="lastName" placeholder="Last Name" />
+  <input id="preferredFirstName" placeholder="Preferred First Name" />
+  <input id="email" placeholder="Email" />
+  <input id="phone" placeholder="Phone" />
 
-    <!-- PERSONAL -->
-    <input id="firstName" placeholder="First Name" />
-    <input id="lastName" placeholder="Last Name" />
-    <input id="preferredFirstName" placeholder="Preferred First Name" />
-    <input id="email" placeholder="Email" />
-    <input id="phone" placeholder="Phone" />
+  <!-- LOCATION -->
+  <h3>Location</h3>
+  <input id="address" placeholder="Address" />
+  <input id="city" placeholder="City" />
+  <input id="county" placeholder="County" />
+  <input id="zipcode" placeholder="Zipcode" />
+  <input id="country" placeholder="Country" />
 
-    <!-- LOCATION -->
-    <input id="address" placeholder="Address" />
-    <input id="city" placeholder="City" />
-    <input id="county" placeholder="County" />
-    <input id="zipcode" placeholder="Zipcode" />
-    <input id="country" placeholder="Country" />
+  <!-- EDUCATION -->
+  <h3>Education</h3>
+  <input id="school" placeholder="School / University" />
+  <input id="degree" placeholder="Degree" />
+  <select id="endMonth">
+    <option value="">End Month</option>
+    <option>January</option><option>February</option><option>March</option>
+    <option>April</option><option>May</option><option>June</option>
+    <option>July</option><option>August</option><option>September</option>
+    <option>October</option><option>November</option><option>December</option>
+  </select>
+  <select id="endYear">
+    <option value="">End Year</option>
+    <!-- Generate years dynamically if you want -->
+    <option>2026</option><option>2025</option><option>2024</option>
+    <option>2023</option><option>2022</option>
+  </select>
 
-    <!-- LINKS -->
-    <input id="linkedin" placeholder="LinkedIn Profile" />
-    <input id="website" placeholder="Website / Portfolio" />
+  <!-- LINKS -->
+  <h3>Links</h3>
+  <input id="linkedin" placeholder="LinkedIn Profile" />
+  <input id="website" placeholder="Website / Portfolio" />
 
-    <!-- EDUCATION -->
-    <input id="school" placeholder="School" />
-    <input id="degree" placeholder="Degree" />
+  <!-- WORK AUTHORIZATION -->
+  <h3>Work Authorization</h3>
+  <select id="sponsorshipRequired">
+    <option value="">Require Sponsorship?</option>
+    <option>Yes</option>
+    <option>No</option>
+  </select>
 
+  <!-- VOLUNTARY SELF-ID / EEO -->
+  <h3>Voluntary Self-ID (Optional)</h3>
+  <select id="gender">
+    <option value="">Gender</option>
+    <option>Male</option>
+    <option>Female</option>
+    <option>Other</option>
+    <option>Prefer not to say</option>
+  </select>
 
+  <select id="hispanicLatino">
+    <option value="">Hispanic / Latino?</option>
+    <option>Yes</option>
+    <option>No</option>
+    <option>Prefer not to say</option>
+  </select>
+
+  <select id="race">
+    <option value="">Race</option>
+    <option>American Indian / Alaska Native</option>
+    <option>Asian</option>
+    <option>Black / African American</option>
+    <option>Native Hawaiian / Pacific Islander</option>
+    <option>White</option>
+    <option>Other</option>
+    <option>Prefer not to say</option>
+  </select>
+
+  <select id="veteranStatus">
+    <option value="">Veteran Status</option>
+    <option>Yes</option>
+    <option>No</option>
+    <option>Prefer not to say</option>
+  </select>
+
+  <select id="disabilityStatus">
+    <option value="">Disability Status</option>
+    <option>Yes</option>
+    <option>No</option>
+    <option>Prefer not to say</option>
+  </select>
+
+  <!-- Buttons -->
+  <div style="display:flex; justify-content: space-between;">
     <button id="save">Save</button>
     <button id="fill">Autofill Page</button>
-
-
-    <script src="popup.js"></script>
-  </body>
+  </div>
+</body>
 </html>

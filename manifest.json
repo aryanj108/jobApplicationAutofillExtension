@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Job Application Autofill",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Autofill technical job applications",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
