@@ -21,6 +21,31 @@ chrome.storage.sync.get(null, (data) => {
       input.value = data.github || "";
     }
 
+    if (label.includes("linkedin")) {
+    input.value = profile.links.linkedin;
+    }
+
+    if (
+    label.includes("website") ||
+    label.includes("portfolio") ||
+    label.includes("personal site")
+    ) {
+    input.value = profile.links.website;
+    }
+
+    if (
+    label.includes("school") ||
+    label.includes("university") ||
+    label.includes("college")
+    ) {
+    input.value = profile.education.school;
+    }
+
+    if (label.includes("degree")) {
+    input.value = profile.education.degree;
+    }
+
+
     // Important: tell the site the input changed
     input.dispatchEvent(new Event("input", { bubbles: true }));
     input.dispatchEvent(new Event("change", { bubbles: true }));
