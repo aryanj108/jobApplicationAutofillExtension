@@ -163,24 +163,6 @@
       background: #f56565;
       color: white;
     }
-    
-    /* Scrollbar styling */
-    .container::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    .container::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-    
-    .container::-webkit-scrollbar-thumb {
-      background: #667eea;
-      border-radius: 4px;
-    }
-    
-    .container::-webkit-scrollbar-thumb:hover {
-      background: #5568d3;
-    }
   </style>
 </head>
 <body>
@@ -231,6 +213,10 @@
       <div class="form-group">
         <label for="city">City</label>
         <input id="city" type="text" placeholder="San Francisco" />
+      </div>
+      <div class="form-group">
+        <label for="state">State / Province</label>
+        <input id="state" type="text" placeholder="California / CA" />
       </div>
       <div class="form-group">
         <label for="county">County (Optional)</label>
@@ -337,7 +323,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="sponsorshipRequired">Require Visa Sponsorship?</label>
+        <label for="sponsorshipRequired">Require Visa Sponsorship Now?</label>
         <select id="sponsorshipRequired">
           <option value="">Select Option</option>
           <option>Yes</option>
@@ -345,12 +331,155 @@
         </select>
       </div>
       <div class="form-group">
+        <label for="futureSponsorshipRequired">Require Sponsorship in Future?</label>
+        <select id="futureSponsorshipRequired">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="workAuthorizationType">Current Work Authorization Type</label>
+        <select id="workAuthorizationType">
+          <option value="">Select Option</option>
+          <option>Citizen</option>
+          <option>Permanent residency</option>
+          <option>Student visa</option>
+          <option>Work visa</option>
+          <option>F-1 Status</option>
+          <option>J-1 Status</option>
+          <option>H-1B</option>
+          <option>TN Status</option>
+          <option>OPT</option>
+          <option>CPT</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label for="referralSource">How did you hear about us?</label>
         <input id="referralSource" type="text" placeholder="LinkedIn, Friend, etc." />
       </div>
       <div class="form-group">
-        <label for="officePreference">Willing to work in office? (e.g., "3x per week in SF")</label>
+        <label for="officePreference">Willing to work in office?</label>
         <input id="officePreference" type="text" placeholder="Yes, 3x per week" />
+      </div>
+      <div class="form-group">
+        <label for="currentLocation">Current Location (City, State)</label>
+        <input id="currentLocation" type="text" placeholder="Austin, TX" />
+      </div>
+      <div class="form-group">
+        <label for="availableStartDate">Available Start Date</label>
+        <input id="availableStartDate" type="text" placeholder="Immediately / June 2026" />
+      </div>
+    </div>
+
+    <!-- WORK EXPERIENCE -->
+    <div class="section">
+      <div class="section-title">
+        <span class="section-icon">💻</span>
+        Work Experience (Most Recent)
+      </div>
+      <div class="form-group">
+        <label for="jobTitle">Job Title</label>
+        <input id="jobTitle" type="text" placeholder="Software Engineer Intern" />
+      </div>
+      <div class="form-group">
+        <label for="company">Company</label>
+        <input id="company" type="text" placeholder="Google" />
+      </div>
+      <div class="form-group">
+        <label for="workLocation">Work Location</label>
+        <input id="workLocation" type="text" placeholder="Mountain View, CA" />
+      </div>
+      <div class="form-group">
+        <label for="workStartDate">Start Date</label>
+        <input id="workStartDate" type="text" placeholder="June 2025" />
+      </div>
+      <div class="form-group">
+        <label for="workEndDate">End Date</label>
+        <input id="workEndDate" type="text" placeholder="August 2025 / Present" />
+      </div>
+    </div>
+
+    <!-- ADDITIONAL QUESTIONS -->
+    <div class="section">
+      <div class="section-title">
+        <span class="section-icon">❓</span>
+        Common Questions
+      </div>
+      <div class="form-group">
+        <label for="age18OrOlder">Are you 18 years or older?</label>
+        <select id="age18OrOlder">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="hasHighSchoolDiploma">High School Diploma or Equivalent?</label>
+        <select id="hasHighSchoolDiploma">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="currentlyEnrolled">Currently Enrolled in Degree Program?</label>
+        <select id="currentlyEnrolled">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="returningToSchool">Returning to School After Work Term?</label>
+        <select id="returningToSchool">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="isCoopProgram">Part of Formal Co-op Program?</label>
+        <select id="isCoopProgram">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="priorInternships">Number of Prior Internships</label>
+        <select id="priorInternships">
+          <option value="">Select Option</option>
+          <option>0</option>
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4+</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="hasRelativesAtCompany">Relatives at Company?</label>
+        <select id="hasRelativesAtCompany">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="previouslyApplied">Previously Applied/Worked Here?</label>
+        <select id="previouslyApplied">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="hasNonCompete">Subject to Non-Compete Agreement?</label>
+        <select id="hasNonCompete">
+          <option value="">Select Option</option>
+          <option>Yes</option>
+          <option>No</option>
+        </select>
       </div>
     </div>
 
