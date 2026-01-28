@@ -76,6 +76,8 @@ chrome.storage.sync.get("profile", ({ profile }) => {
   profile.education = profile.education || {};
   profile.links = profile.links || {};
   profile.workAuth = profile.workAuth || {};
+  profile.workExperience = profile.workExperience || {};
+  profile.additionalQuestions = profile.additionalQuestions || {};
   profile.eeo = profile.eeo || {};
 
   const inputs = document.querySelectorAll("input, textarea");
@@ -404,12 +406,40 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       setInputValue(input, profile.links.website || "");
     }
     // Referral source / How did you hear
-    else if (label.includes("hear about") || label.includes("referral") || label.includes("how did you")) {
+    else if (label.includes("hear about") || label.includes("referral") || label.includes("how did you") || label.includes("find out about")) {
       setInputValue(input, profile.workAuth.referralSource || "");
     }
     // Office preference / willing to work in office
-    else if (label.includes("office") && (label.includes("willing") || label.includes("work"))) {
+    else if (label.includes("office") && (label.includes("willing") || label.includes("work") || label.includes("able"))) {
       setInputValue(input, profile.workAuth.officePreference || "");
+    }
+    // Current location
+    else if (label.includes("current location") || (label.includes("location") && label.includes("current"))) {
+      setInputValue(input, profile.workAuth.currentLocation || "");
+    }
+    else if (label.includes("mailing address") && !label.includes("email")) {
+      setInputValue(input, profile.location.address || "");
+    }
+    // Available start date
+    else if (label.includes("available") && (label.includes("start") || label.includes("date"))) {
+      setInputValue(input, profile.workAuth.availableStartDate || "");
+    }
+    else if (label.includes("when") && label.includes("available")) {
+      setInputValue(input, profile.workAuth.availableStartDate || "");
+    }
+    // Work Experience
+    else if (label.includes("job title") || label.includes("position title")) {
+      setInputValue(input, profile.workExperience.jobTitle || "");
+    }
+    else if (label.includes("company") && !label.includes("multiple")) {
+      setInputValue(input, profile.workExperience.company || "");
+    }
+    else if ((label.includes("work") || label.includes("job")) && label.includes("location")) {
+      setInputValue(input, profile.workExperience.workLocation || "");
+    }
+    // GPA
+    else if (label.includes("gpa") || label.includes("overall result")) {
+      // Skip GPA for now - user should fill manually
     }
   });
 
@@ -432,19 +462,58 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       console.log("Found 'legally authorized to work' dropdown");
       fillSelect(select, profile.workAuth.legallyAuthorized || "");
     }
-    else if (label.includes("authorized") && label.includes("work") && label.includes("us")) {
-      console.log("Found 'authorized to work in US' dropdown");
+    else if (label.includes("authorized") && label.includes("work") && (label.includes("us") || label.includes("country"))) {
+      console.log("Found 'authorized to work' dropdown");
       fillSelect(select, profile.workAuth.legallyAuthorized || "");
     }
-    else if (label.includes("legal") && label.includes("work")) {
+    else if (label.includes("presently authorized") && label.includes("work")) {
+      console.log("Found 'presently authorized to work' dropdown");
+      fillSelect(select, profile.workAuth.legallyAuthorized || "");
+    }
+    else if (label.includes("legal") && label.includes("work") && label.includes("authorization")) {
       console.log("Found legal work authorization dropdown");
       fillSelect(select, profile.workAuth.legallyAuthorized || "");
     }
-    // Sponsorship - be very specific
-    else if (label.includes("will you") && label.includes("require") && label.includes("sponsorship")) {
-      console.log("Found 'will you require sponsorship' dropdown");
+    // Current work authorization type
+    else if (label.includes("current") && label.includes("work authorization")) {
+      console.log("Found work authorization type dropdown");
+      fillSelect(select, profile.workAuth.workAuthorizationType || "");
+    }
+    else if (label.includes("authorization") && label.includes("status")) {
+      console.log("Found authorization status dropdown");
+      fillSelect(select, profile.workAuth.workAuthorizationType || "");
+    }
+    // F-1 / J-1 Status
+    else if (label.includes("f-1") || label.includes("j-1")) {
+      console.log("Found F-1/J-1 status dropdown");
+      // If user has F-1 in their work auth type, select Yes
+      const hasF1orJ1 = (profile.workAuth.workAuthorizationType || "").toLowerCase().includes("f-1") || 
+                        (profile.workAuth.workAuthorizationType || "").toLowerCase().includes("j-1");
+      fillSelect(select, hasF1orJ1 ? "Yes" : "No");
+    }
+    // Sponsorship NOW - be very specific
+    else if (label.includes("do you") && label.includes("currently") && label.includes("require") && label.includes("sponsorship")) {
+      console.log("Found 'do you currently require sponsorship' dropdown");
       fillSelect(select, profile.workAuth.sponsorshipRequired || "");
     }
+    else if (label.includes("now") && label.includes("require") && label.includes("sponsorship")) {
+      console.log("Found 'require sponsorship now' dropdown");
+      fillSelect(select, profile.workAuth.sponsorshipRequired || "");
+    }
+    // Sponsorship FUTURE
+    else if (label.includes("will you") && label.includes("require") && label.includes("sponsorship")) {
+      console.log("Found 'will you require sponsorship' dropdown");
+      fillSelect(select, profile.workAuth.futureSponsorshipRequired || profile.workAuth.sponsorshipRequired || "");
+    }
+    else if (label.includes("future") && label.includes("require") && label.includes("sponsorship")) {
+      console.log("Found 'future sponsorship' dropdown");
+      fillSelect(select, profile.workAuth.futureSponsorshipRequired || "");
+    }
+    else if (label.includes("in the future") && label.includes("sponsorship")) {
+      console.log("Found 'in the future sponsorship' dropdown");
+      fillSelect(select, profile.workAuth.futureSponsorshipRequired || "");
+    }
+    // General sponsorship
     else if (label.includes("visa") && label.includes("sponsorship")) {
       console.log("Found 'visa sponsorship' dropdown");
       fillSelect(select, profile.workAuth.sponsorshipRequired || "");
@@ -452,6 +521,75 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     else if (label.includes("require") && (label.includes("visa") || label.includes("sponsorship"))) {
       console.log("Found 'require visa/sponsorship' dropdown");
       fillSelect(select, profile.workAuth.sponsorshipRequired || "");
+    }
+    // Age 18+
+    else if ((label.includes("18") || label.includes("eighteen")) && (label.includes("age") || label.includes("years") || label.includes("old"))) {
+      console.log("Found age 18+ dropdown");
+      fillSelect(select, profile.additionalQuestions.age18OrOlder || "");
+    }
+    else if (label.includes("age of majority")) {
+      console.log("Found age of majority dropdown");
+      fillSelect(select, profile.additionalQuestions.age18OrOlder || "");
+    }
+    // High school diploma
+    else if (label.includes("high school") && label.includes("diploma")) {
+      console.log("Found high school diploma dropdown");
+      fillSelect(select, profile.additionalQuestions.hasHighSchoolDiploma || "");
+    }
+    else if (label.includes("secondary school")) {
+      console.log("Found secondary school dropdown");
+      fillSelect(select, profile.additionalQuestions.hasHighSchoolDiploma || "");
+    }
+    // Currently enrolled
+    else if (label.includes("currently enrolled") || (label.includes("enrolled") && label.includes("degree"))) {
+      console.log("Found currently enrolled dropdown");
+      fillSelect(select, profile.additionalQuestions.currentlyEnrolled || "");
+    }
+    // Returning to school
+    else if (label.includes("returning to school") || label.includes("return to school")) {
+      console.log("Found returning to school dropdown");
+      fillSelect(select, profile.additionalQuestions.returningToSchool || "");
+    }
+    // Co-op program
+    else if (label.includes("co-op") && label.includes("program")) {
+      console.log("Found co-op program dropdown");
+      fillSelect(select, profile.additionalQuestions.isCoopProgram || "");
+    }
+    // Prior internships
+    else if (label.includes("prior") && (label.includes("internship") || label.includes("intern"))) {
+      console.log("Found prior internships dropdown");
+      fillSelect(select, profile.additionalQuestions.priorInternships || "");
+    }
+    else if (label.includes("how many") && label.includes("internship")) {
+      console.log("Found number of internships dropdown");
+      fillSelect(select, profile.additionalQuestions.priorInternships || "");
+    }
+    // Relatives at company
+    else if (label.includes("relative") && (label.includes("employed") || label.includes("work"))) {
+      console.log("Found relatives at company dropdown");
+      fillSelect(select, profile.additionalQuestions.hasRelativesAtCompany || "");
+    }
+    else if (label.includes("family") && label.includes("member") && (label.includes("employed") || label.includes("work"))) {
+      console.log("Found family member at company dropdown");
+      fillSelect(select, profile.additionalQuestions.hasRelativesAtCompany || "");
+    }
+    // Previously worked/applied
+    else if (label.includes("previously") && (label.includes("worked") || label.includes("employed") || label.includes("applied"))) {
+      console.log("Found previously worked/applied dropdown");
+      fillSelect(select, profile.additionalQuestions.previouslyApplied || "");
+    }
+    else if (label.includes("former") && label.includes("employee")) {
+      console.log("Found former employee dropdown");
+      fillSelect(select, profile.additionalQuestions.previouslyApplied || "");
+    }
+    // Non-compete agreement
+    else if (label.includes("non-compete") || label.includes("restrictive covenant")) {
+      console.log("Found non-compete dropdown");
+      fillSelect(select, profile.additionalQuestions.hasNonCompete || "");
+    }
+    else if (label.includes("non-solicitation")) {
+      console.log("Found non-solicitation dropdown");
+      fillSelect(select, profile.additionalQuestions.hasNonCompete || "");
     }
     // Education graduation year (expected graduation)
     else if ((label.includes("graduation") || label.includes("expected")) && label.includes("year")) {
@@ -464,6 +602,10 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       fillSelect(select, profile.education.endMonth || "");
     } else if (label.includes("end") && label.includes("year")) {
       fillSelect(select, profile.education.endYear || "");
+    }
+    // Current year of study
+    else if (label.includes("current year") && label.includes("study")) {
+      // Skip - this varies too much
     }
     // EEO / demographics
     else if (label.includes("gender") || label.includes("sex")) {
@@ -549,13 +691,31 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       valueToSelect = profile.workAuth.legallyAuthorized || "";
       console.log("Select2: legally authorized");
     } 
-    else if (label.includes("authorized") && label.includes("work") && label.includes("us")) {
+    else if (label.includes("authorized") && label.includes("work") && (label.includes("us") || label.includes("country"))) {
       valueToSelect = profile.workAuth.legallyAuthorized || "";
-      console.log("Select2: legally authorized (work in US)");
+      console.log("Select2: authorized to work");
+    }
+    else if (label.includes("current") && label.includes("work authorization")) {
+      valueToSelect = profile.workAuth.workAuthorizationType || "";
+      console.log("Select2: work authorization type");
+    }
+    else if (label.includes("f-1") || label.includes("j-1")) {
+      const hasF1orJ1 = (profile.workAuth.workAuthorizationType || "").toLowerCase().includes("f-1") || 
+                        (profile.workAuth.workAuthorizationType || "").toLowerCase().includes("j-1");
+      valueToSelect = hasF1orJ1 ? "Yes" : "No";
+      console.log("Select2: F-1/J-1 status");
+    }
+    else if (label.includes("do you") && label.includes("currently") && label.includes("require") && label.includes("sponsorship")) {
+      valueToSelect = profile.workAuth.sponsorshipRequired || "";
+      console.log("Select2: currently require sponsorship");
     }
     else if (label.includes("will you") && label.includes("require") && label.includes("sponsorship")) {
-      valueToSelect = profile.workAuth.sponsorshipRequired || "";
-      console.log("Select2: sponsorship (will you require)");
+      valueToSelect = profile.workAuth.futureSponsorshipRequired || profile.workAuth.sponsorshipRequired || "";
+      console.log("Select2: future sponsorship");
+    }
+    else if (label.includes("future") && label.includes("sponsorship")) {
+      valueToSelect = profile.workAuth.futureSponsorshipRequired || "";
+      console.log("Select2: future sponsorship");
     }
     else if (label.includes("visa") && label.includes("sponsorship")) {
       valueToSelect = profile.workAuth.sponsorshipRequired || "";
@@ -564,6 +724,46 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     else if (label.includes("require") && label.includes("sponsorship")) {
       valueToSelect = profile.workAuth.sponsorshipRequired || "";
       console.log("Select2: require sponsorship");
+    }
+    else if ((label.includes("18") || label.includes("eighteen")) && (label.includes("age") || label.includes("years"))) {
+      valueToSelect = profile.additionalQuestions.age18OrOlder || "";
+      console.log("Select2: age 18+");
+    }
+    else if (label.includes("age of majority")) {
+      valueToSelect = profile.additionalQuestions.age18OrOlder || "";
+      console.log("Select2: age of majority");
+    }
+    else if (label.includes("high school") && label.includes("diploma")) {
+      valueToSelect = profile.additionalQuestions.hasHighSchoolDiploma || "";
+      console.log("Select2: high school diploma");
+    }
+    else if (label.includes("currently enrolled")) {
+      valueToSelect = profile.additionalQuestions.currentlyEnrolled || "";
+      console.log("Select2: currently enrolled");
+    }
+    else if (label.includes("returning to school")) {
+      valueToSelect = profile.additionalQuestions.returningToSchool || "";
+      console.log("Select2: returning to school");
+    }
+    else if (label.includes("co-op") && label.includes("program")) {
+      valueToSelect = profile.additionalQuestions.isCoopProgram || "";
+      console.log("Select2: co-op program");
+    }
+    else if (label.includes("prior") && label.includes("internship")) {
+      valueToSelect = profile.additionalQuestions.priorInternships || "";
+      console.log("Select2: prior internships");
+    }
+    else if (label.includes("relative") && label.includes("employed")) {
+      valueToSelect = profile.additionalQuestions.hasRelativesAtCompany || "";
+      console.log("Select2: relatives at company");
+    }
+    else if (label.includes("previously") && (label.includes("worked") || label.includes("applied"))) {
+      valueToSelect = profile.additionalQuestions.previouslyApplied || "";
+      console.log("Select2: previously worked/applied");
+    }
+    else if (label.includes("non-compete")) {
+      valueToSelect = profile.additionalQuestions.hasNonCompete || "";
+      console.log("Select2: non-compete");
     }
     else if (label.includes("expected") && label.includes("graduation")) {
       valueToSelect = profile.education.graduationYear || "";

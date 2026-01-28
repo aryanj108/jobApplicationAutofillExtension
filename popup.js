@@ -55,8 +55,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // WORK AUTHORIZATION
     document.getElementById("legallyAuthorized").value = profile.workAuth.legallyAuthorized || "";
     document.getElementById("sponsorshipRequired").value = profile.workAuth.sponsorshipRequired || "";
+    document.getElementById("futureSponsorshipRequired").value = profile.workAuth.futureSponsorshipRequired || "";
+    document.getElementById("workAuthorizationType").value = profile.workAuth.workAuthorizationType || "";
     document.getElementById("referralSource").value = profile.workAuth.referralSource || "";
     document.getElementById("officePreference").value = profile.workAuth.officePreference || "";
+    document.getElementById("currentLocation").value = profile.workAuth.currentLocation || "";
+    document.getElementById("availableStartDate").value = profile.workAuth.availableStartDate || "";
+
+    // WORK EXPERIENCE
+    document.getElementById("jobTitle").value = profile.workExperience?.jobTitle || "";
+    document.getElementById("company").value = profile.workExperience?.company || "";
+    document.getElementById("workLocation").value = profile.workExperience?.workLocation || "";
+    document.getElementById("workStartDate").value = profile.workExperience?.workStartDate || "";
+    document.getElementById("workEndDate").value = profile.workExperience?.workEndDate || "";
+
+    // ADDITIONAL QUESTIONS
+    document.getElementById("age18OrOlder").value = profile.additionalQuestions?.age18OrOlder || "";
+    document.getElementById("hasHighSchoolDiploma").value = profile.additionalQuestions?.hasHighSchoolDiploma || "";
+    document.getElementById("currentlyEnrolled").value = profile.additionalQuestions?.currentlyEnrolled || "";
+    document.getElementById("returningToSchool").value = profile.additionalQuestions?.returningToSchool || "";
+    document.getElementById("isCoopProgram").value = profile.additionalQuestions?.isCoopProgram || "";
+    document.getElementById("priorInternships").value = profile.additionalQuestions?.priorInternships || "";
+    document.getElementById("hasRelativesAtCompany").value = profile.additionalQuestions?.hasRelativesAtCompany || "";
+    document.getElementById("previouslyApplied").value = profile.additionalQuestions?.previouslyApplied || "";
+    document.getElementById("hasNonCompete").value = profile.additionalQuestions?.hasNonCompete || "";
 
     // EEO / Voluntary Self-ID
     document.getElementById("gender").value = profile.eeo.gender || "";
@@ -100,8 +122,30 @@ document.getElementById("save").addEventListener("click", () => {
       workAuth: {
         legallyAuthorized: document.getElementById("legallyAuthorized").value,
         sponsorshipRequired: document.getElementById("sponsorshipRequired").value,
+        futureSponsorshipRequired: document.getElementById("futureSponsorshipRequired").value,
+        workAuthorizationType: document.getElementById("workAuthorizationType").value,
         referralSource: document.getElementById("referralSource").value,
-        officePreference: document.getElementById("officePreference").value
+        officePreference: document.getElementById("officePreference").value,
+        currentLocation: document.getElementById("currentLocation").value,
+        availableStartDate: document.getElementById("availableStartDate").value
+      },
+      workExperience: {
+        jobTitle: document.getElementById("jobTitle").value,
+        company: document.getElementById("company").value,
+        workLocation: document.getElementById("workLocation").value,
+        workStartDate: document.getElementById("workStartDate").value,
+        workEndDate: document.getElementById("workEndDate").value
+      },
+      additionalQuestions: {
+        age18OrOlder: document.getElementById("age18OrOlder").value,
+        hasHighSchoolDiploma: document.getElementById("hasHighSchoolDiploma").value,
+        currentlyEnrolled: document.getElementById("currentlyEnrolled").value,
+        returningToSchool: document.getElementById("returningToSchool").value,
+        isCoopProgram: document.getElementById("isCoopProgram").value,
+        priorInternships: document.getElementById("priorInternships").value,
+        hasRelativesAtCompany: document.getElementById("hasRelativesAtCompany").value,
+        previouslyApplied: document.getElementById("previouslyApplied").value,
+        hasNonCompete: document.getElementById("hasNonCompete").value
       },
       eeo: {
         gender: document.getElementById("gender").value,
