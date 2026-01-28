@@ -386,11 +386,13 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       setInputValue(input, profile.location.address || "");
     } else if (label.includes("city")) {
       setInputValue(input, profile.location.city || "");
+    } else if (label.includes("state") || label.includes("province")) {
+      setInputValue(input, profile.location.state || "");
     } else if (label.includes("county")) {
       setInputValue(input, profile.location.county || "");
     } else if (label.includes("zip") || label.includes("postal")) {
       setInputValue(input, profile.location.zipcode || "");
-    } else if (label.includes("country")) {
+    } else if (label.includes("country") && !label.includes("phone")) {
       setInputValue(input, profile.location.country || "");
     }
     // Education

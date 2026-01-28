@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // LOCATION
     document.getElementById("address").value = profile.location.address || "";
     document.getElementById("city").value = profile.location.city || "";
+    document.getElementById("state").value = profile.location.state || "";
     document.getElementById("county").value = profile.location.county || "";
     document.getElementById("zipcode").value = profile.location.zipcode || "";
     document.getElementById("country").value = profile.location.country || "";
@@ -104,6 +105,7 @@ document.getElementById("save").addEventListener("click", () => {
       location: {
         address: document.getElementById("address").value,
         city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
         county: document.getElementById("county").value,
         zipcode: document.getElementById("zipcode").value,
         country: document.getElementById("country").value
