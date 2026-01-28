@@ -160,105 +160,110 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     if (!value) return;
     
     try {
-      // Native setter to bypass React
-      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-        window.HTMLInputElement.prototype,
-        "value"
-      ).set;
+      // Focus the input first
+      input.focus();
       
-      const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype,
-        "value"
-      ).set;
-      
-      if (input.tagName === "TEXTAREA" && nativeTextAreaValueSetter) {
-        nativeTextAreaValueSetter.call(input, value);
-      } else if (nativeInputValueSetter) {
-        nativeInputValueSetter.call(input, value);
-      } else {
-        input.value = value;
-      }
-      
-      // Trigger events for React and other frameworks
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-      
-      console.log(`Filled ${input.name || input.id || 'input'} with: ${value}`);
-      
-      // Handle autocomplete dropdowns (like school, company, etc.)
-      if (handleAutocomplete) {
-        // Focus the input to show dropdown
-        input.focus();
+      // Small delay to let focus register
+      setTimeout(() => {
+        // Native setter to bypass React
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          "value"
+        ).set;
         
-        // Wait for autocomplete to appear and click first option
-        setTimeout(() => {
-          // Try multiple strategies to find and click the dropdown option
-          
-          // Strategy 1: Look for common autocomplete dropdown selectors
-          const dropdownSelectors = [
-            '[role="listbox"] [role="option"]',
-            '.autocomplete-option',
-            '.select-option',
-            '[class*="option"]',
-            '[class*="menu"] [role="option"]',
-            'ul[role="listbox"] li',
-            '.dropdown-item',
-            '[data-option-index="0"]'
-          ];
-          
-          let clicked = false;
-          
-          for (const selector of dropdownSelectors) {
-            const options = document.querySelectorAll(selector);
-            if (options.length > 0) {
-              // Click the first option
-              options[0].click();
-              console.log(`Clicked first option using selector: ${selector}`);
-              clicked = true;
-              break;
-            }
-          }
-          
-          // Strategy 2: Press arrow down then enter
-          if (!clicked) {
-            const arrowDownEvent = new KeyboardEvent("keydown", {
-              key: "ArrowDown",
-              code: "ArrowDown",
-              keyCode: 40,
-              which: 40,
-              bubbles: true,
-              cancelable: true
-            });
-            input.dispatchEvent(arrowDownEvent);
-            
-            setTimeout(() => {
-              const enterEvent = new KeyboardEvent("keydown", {
-                key: "Enter",
-                code: "Enter",
-                keyCode: 13,
-                which: 13,
-                bubbles: true,
-                cancelable: true
-              });
-              input.dispatchEvent(enterEvent);
-              
-              const enterEventUp = new KeyboardEvent("keyup", {
-                key: "Enter",
-                code: "Enter",
-                keyCode: 13,
-                which: 13,
-                bubbles: true,
-                cancelable: true
-              });
-              input.dispatchEvent(enterEventUp);
-              
-              console.log(`Pressed ArrowDown + Enter on ${input.name || input.id || 'input'}`);
-            }, 100);
-          }
-        }, 300); // Wait for dropdown to appear
-      } else {
+        const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLTextAreaElement.prototype,
+          "value"
+        ).set;
+        
+        if (input.tagName === "TEXTAREA" && nativeTextAreaValueSetter) {
+          nativeTextAreaValueSetter.call(input, value);
+        } else if (nativeInputValueSetter) {
+          nativeInputValueSetter.call(input, value);
+        } else {
+          input.value = value;
+        }
+        
+        // Trigger events for React and other frameworks
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
         input.dispatchEvent(new Event("blur", { bubbles: true }));
-      }
+        
+        // For Workday specifically, also trigger these
+        input.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true }));
+        input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+        
+        console.log(`Filled ${input.name || input.id || 'input'} with: ${value}`);
+        
+        // Handle autocomplete dropdowns (like school, company, etc.)
+        if (handleAutocomplete) {
+          setTimeout(() => {
+            // Try multiple strategies to find and click the dropdown option
+            
+            // Strategy 1: Look for common autocomplete dropdown selectors
+            const dropdownSelectors = [
+              '[role="listbox"] [role="option"]',
+              '.autocomplete-option',
+              '.select-option',
+              '[class*="option"]',
+              '[class*="menu"] [role="option"]',
+              'ul[role="listbox"] li',
+              '.dropdown-item',
+              '[data-option-index="0"]'
+            ];
+            
+            let clicked = false;
+            
+            for (const selector of dropdownSelectors) {
+              const options = document.querySelectorAll(selector);
+              if (options.length > 0) {
+                // Click the first option
+                options[0].click();
+                console.log(`Clicked first option using selector: ${selector}`);
+                clicked = true;
+                break;
+              }
+            }
+            
+            // Strategy 2: Press arrow down then enter
+            if (!clicked) {
+              const arrowDownEvent = new KeyboardEvent("keydown", {
+                key: "ArrowDown",
+                code: "ArrowDown",
+                keyCode: 40,
+                which: 40,
+                bubbles: true,
+                cancelable: true
+              });
+              input.dispatchEvent(arrowDownEvent);
+              
+              setTimeout(() => {
+                const enterEvent = new KeyboardEvent("keydown", {
+                  key: "Enter",
+                  code: "Enter",
+                  keyCode: 13,
+                  which: 13,
+                  bubbles: true,
+                  cancelable: true
+                });
+                input.dispatchEvent(enterEvent);
+                
+                const enterEventUp = new KeyboardEvent("keyup", {
+                  key: "Enter",
+                  code: "Enter",
+                  keyCode: 13,
+                  which: 13,
+                  bubbles: true,
+                  cancelable: true
+                });
+                input.dispatchEvent(enterEventUp);
+                
+                console.log(`Pressed ArrowDown + Enter on ${input.name || input.id || 'input'}`);
+              }, 100);
+            }
+          }, 300); // Wait for dropdown to appear
+        }
+      }, 50); // Small delay after focus
       
     } catch (error) {
       console.error("Error setting input value:", error);
@@ -349,7 +354,9 @@ chrome.storage.sync.get("profile", ({ profile }) => {
     }
   };
 
-  // --- Fill text inputs and textareas ---
+  // --- Fill text inputs and textareas with delays ---
+  const inputsToFill = [];
+  
   inputs.forEach((input) => {
     // Skip file inputs, hidden inputs, and buttons
     if (input.type === "file" || input.type === "hidden" || 
@@ -369,80 +376,97 @@ chrome.storage.sync.get("profile", ({ profile }) => {
       return;
     }
 
+    let valueToFill = null;
+    let useAutocomplete = false;
+
     // Personal
     if (label.includes("first") && label.includes("name") && !label.includes("last") && !label.includes("preferred")) {
-      setInputValue(input, profile.personal.firstName || "");
+      valueToFill = profile.personal.firstName || "";
     } else if (label.includes("last") && label.includes("name")) {
-      setInputValue(input, profile.personal.lastName || "");
+      valueToFill = profile.personal.lastName || "";
     } else if (label.includes("preferred") || label.includes("nickname")) {
-      setInputValue(input, profile.personal.preferredFirstName || "");
+      valueToFill = profile.personal.preferredFirstName || "";
     } else if (label.includes("email") || label.includes("e-mail")) {
-      setInputValue(input, profile.personal.email || "");
+      valueToFill = profile.personal.email || "";
     } else if (label.includes("phone") || label.includes("mobile") || label.includes("telephone")) {
-      setInputValue(input, profile.personal.phone || "");
+      valueToFill = profile.personal.phone || "";
     }
     // Location
     else if (label.includes("address") && !label.includes("email")) {
-      setInputValue(input, profile.location.address || "");
+      valueToFill = profile.location.address || "";
     } else if (label.includes("city")) {
-      setInputValue(input, profile.location.city || "");
+      valueToFill = profile.location.city || "";
     } else if (label.includes("state") || label.includes("province")) {
-      setInputValue(input, profile.location.state || "");
+      valueToFill = profile.location.state || "";
     } else if (label.includes("county")) {
-      setInputValue(input, profile.location.county || "");
+      valueToFill = profile.location.county || "";
     } else if (label.includes("zip") || label.includes("postal")) {
-      setInputValue(input, profile.location.zipcode || "");
+      valueToFill = profile.location.zipcode || "";
     } else if (label.includes("country") && !label.includes("phone")) {
-      setInputValue(input, profile.location.country || "");
+      valueToFill = profile.location.country || "";
     }
     // Education
     else if (label.includes("school") || label.includes("university") || label.includes("college") || label.includes("institution")) {
-      setInputValue(input, profile.education.school || "", true); // Press Enter for autocomplete
+      valueToFill = profile.education.school || "";
+      useAutocomplete = true; // Press Enter for autocomplete
     } else if (label.includes("degree") || label.includes("major") || label.includes("field of study")) {
-      setInputValue(input, profile.education.degree || "");
+      valueToFill = profile.education.degree || "";
     }
     // Links
     else if (label.includes("linkedin")) {
-      setInputValue(input, profile.links.linkedin || "");
+      valueToFill = profile.links.linkedin || "";
     } else if (label.includes("website") || label.includes("portfolio") || label.includes("personal site") || label.includes("url")) {
-      setInputValue(input, profile.links.website || "");
+      valueToFill = profile.links.website || "";
     }
     // Referral source / How did you hear
     else if (label.includes("hear about") || label.includes("referral") || label.includes("how did you") || label.includes("find out about")) {
-      setInputValue(input, profile.workAuth.referralSource || "");
+      valueToFill = profile.workAuth.referralSource || "";
     }
     // Office preference / willing to work in office
     else if (label.includes("office") && (label.includes("willing") || label.includes("work") || label.includes("able"))) {
-      setInputValue(input, profile.workAuth.officePreference || "");
+      valueToFill = profile.workAuth.officePreference || "";
     }
     // Current location
     else if (label.includes("current location") || (label.includes("location") && label.includes("current"))) {
-      setInputValue(input, profile.workAuth.currentLocation || "");
+      valueToFill = profile.workAuth.currentLocation || "";
     }
     else if (label.includes("mailing address") && !label.includes("email")) {
-      setInputValue(input, profile.location.address || "");
+      valueToFill = profile.location.address || "";
     }
     // Available start date
     else if (label.includes("available") && (label.includes("start") || label.includes("date"))) {
-      setInputValue(input, profile.workAuth.availableStartDate || "");
+      valueToFill = profile.workAuth.availableStartDate || "";
     }
     else if (label.includes("when") && label.includes("available")) {
-      setInputValue(input, profile.workAuth.availableStartDate || "");
+      valueToFill = profile.workAuth.availableStartDate || "";
     }
     // Work Experience
     else if (label.includes("job title") || label.includes("position title")) {
-      setInputValue(input, profile.workExperience.jobTitle || "");
+      valueToFill = profile.workExperience.jobTitle || "";
     }
     else if (label.includes("company") && !label.includes("multiple")) {
-      setInputValue(input, profile.workExperience.company || "");
+      valueToFill = profile.workExperience.company || "";
     }
     else if ((label.includes("work") || label.includes("job")) && label.includes("location")) {
-      setInputValue(input, profile.workExperience.workLocation || "");
+      valueToFill = profile.workExperience.workLocation || "";
     }
     // GPA
     else if (label.includes("gpa") || label.includes("overall result")) {
       // Skip GPA for now - user should fill manually
     }
+
+    if (valueToFill) {
+      inputsToFill.push({ input, value: valueToFill, useAutocomplete });
+    }
+  });
+
+  // Fill inputs sequentially with delays for Workday compatibility
+  let fillDelay = 0;
+  inputsToFill.forEach(({ input, value, useAutocomplete }) => {
+    setTimeout(() => {
+      setInputValue(input, value, useAutocomplete);
+    }, fillDelay);
+    fillDelay += 100; // 100ms delay between each field
   });
 
   // --- Fill dropdowns ---

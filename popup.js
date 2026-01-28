@@ -194,11 +194,25 @@ document.getElementById("fill").addEventListener("click", async () => {
       }
 
       try {
+        // Check if it's a Workday form
+        const isWorkday = tab.url && tab.url.includes('myworkdayjobs.com');
+        
+        if (isWorkday) {
+          showStatus("⏳ Filling Workday form (slower for validation)...", "success");
+        }
+        
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ["content.js"]
         });
-        showStatus("✓ Autofill complete!", "success");
+        
+        if (isWorkday) {
+          setTimeout(() => {
+            showStatus("✓ Autofill complete! Check for any unfilled fields.", "success");
+          }, 2000);
+        } else {
+          showStatus("✓ Autofill complete!", "success");
+        }
       } catch (error) {
         console.error("Error executing content script:", error);
         showStatus("Error autofilling page. Try reloading the page.", "error");
